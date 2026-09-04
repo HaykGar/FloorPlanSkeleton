@@ -5,13 +5,14 @@ There are 22 TODOs. They are numbered in the order you should do them, so
 something you have not written yet.
 
 They are also grouped into six steps, one file at a time. **Every step
-changes what you see on screen.** That is the point of the order: you never
-write more than a handful of functions before the game shows you whether you
-got them right.
+changes what you see on screen.**
+
+The point of this project is for you to practice what you learned so far, learn
+some new things along the way, and see your changes improve the game piece by piece.
 
 ---
 
-## Before you start: run it
+## Before you start: run the game
 
 ```
 python main.py
@@ -22,10 +23,7 @@ and tools draw, the requirement list is there, the budget reads $0. Nothing
 crashes.
 
 That is on purpose. Every unfinished function returns a sensible empty answer
-— `0`, `False`, `[]`, `None` — instead of blowing up, so the program keeps
-running while you fill it in. **The screen is your progress bar.**
-
-Your job is to make it *true*.
+— `0`, `False`, `[]`, `None` — instead of crashing the program.
 
 Try this now, before writing anything:
 
@@ -63,7 +61,8 @@ This is the step that turns the game on. Do the two files in order.
 ### 2a. `room.py` (TODO 3–5) — `area`, `cost`, `contains_grid_position`
 
 **This one you check with tests, not with your eyes.** Nothing can be painted
-yet, so there is nothing on screen for a room to be. Run:
+yet, so there is nothing on screen for a room to be. Once you finish these TODOs,
+open the command line from the project folder and run:
 
 ```
 python run_tests.py
@@ -71,20 +70,19 @@ python run_tests.py
 
 `test_area_is_the_number_of_tiles` should go from FAIL to pass.
 
-Three functions with no visual payoff is not a flaw in the project — it is
-the honest reason tests exist. Pure logic is exactly what you cannot check by
-looking.
+You won't see any visual changes in the game yet as we are purely working on some of the 
+logic in this step.
 
 ### 2b. `floor_plan.py` (TODO 6–10) — `paint_error`, `paint`, `erase`, `room_at_position`, `total_cost`
 
-**Run the game. You should now see:**
+**After you complete these TODOs, run the game. You should now see:**
 
-- Dragging **paints rooms**. Colour appears on the grid.
+- Dragging **paints rooms**. Color appears on the grid.
 - Dragging a different room type over an existing room is **refused**, with a
   red preview and the message *"That area is already part of another room."*
 - The **Erase** tool clears tiles.
 - Clicking a room **selects it** — a yellow outline, and the sidebar fills in
-  `SELECTED ROOM`. The **Delete** button stops being greyed out.
+  `SELECTED ROOM`. The **Delete** button stops being grayed out.
 
 **Two things will look wrong, and both are correct for now:**
 
@@ -96,7 +94,6 @@ looking.
    calls `rules.calculate_total_cost()`, which is still a stub. Step 3 fixes
    that too.
 
-Stop and play with it anyway. This is the biggest jump in the project.
 
 ---
 

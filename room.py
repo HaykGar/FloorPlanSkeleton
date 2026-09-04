@@ -34,6 +34,9 @@ class Room:
 
         Returning 0 for now means every room reads as empty and free, and the
         rest of the program still runs.
+        
+        Hint: it's the same function you would use to get the LENgth of a list or string.  Do you remember what it is?
+        Also, make sure you are using self.tiles instead of just tiles, which is a local variable that doesn't exist in this method.
         """
         return 0
 
@@ -46,6 +49,8 @@ class Room:
         Call the method you just wrote rather than counting the tiles a
         second time.  If area() is ever wrong, you want it to be wrong in
         exactly one place.
+        
+        Hint: to call functions that are part of the same class, you need to use self.  For example, self.area() will call the area() method of this Room object.
         """
         return 0
 
@@ -59,6 +64,9 @@ class Room:
         you were given and ask whether it is in the set.  One line, and no
         loop is needed - checking whether something is in a set is the thing
         sets are fastest at.
+        
+        Hint: to build a tuple, you can use parentheses like this: (var1, var2).
+        The "in" keyword is also useful here.
         """
         return False
 

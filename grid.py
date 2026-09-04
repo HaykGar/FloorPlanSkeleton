@@ -81,7 +81,7 @@ def screen_to_grid(floor_plan: FloorPlan, screen_x: int, screen_y: int) -> Tile:
     preview appears under your mouse and grows and shrinks as you drag,
     instead of being stuck in the corner.
     """
-    return (0, 0)
+    return (0, 0) # Replace this with your code
 
 
 def clamp_to_plan(floor_plan: FloorPlan, grid_x: int, grid_y: int) -> Tile:
@@ -96,7 +96,7 @@ def clamp_to_plan(floor_plan: FloorPlan, grid_x: int, grid_y: int) -> Tile:
 
 
 def is_inside_grid(floor_plan: FloorPlan, grid_x: int, grid_y: int) -> bool:
-    """Return True when a tile position is inside the floor plan.
+    """Return True when a tile position is inside the floor plan and False otherwise.
 
     TODO 2
     A tile is inside when its x is at least 0 and less than the plan's width,
@@ -108,6 +108,9 @@ def is_inside_grid(floor_plan: FloorPlan, grid_x: int, grid_y: int) -> bool:
     The game uses this to ignore clicks that land beside the grid.  Returning
     True for everything, as it does now, means clicks outside the building
     are treated as if they were inside it.
+    
+    Hint: floor_plan is an object of type FloorPlan, which has attributes width and height (see floor_plan.py).
+    Do you remember how to access an object's attributes in Python?  Look at our most recent PyGame project if you need a reminder.
     """
     return True
 

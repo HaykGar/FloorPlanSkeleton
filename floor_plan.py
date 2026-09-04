@@ -16,6 +16,7 @@ from rules import (
     tiles_in_rectangle,
 )
 
+# Please do the TODOs in order, because later ones depend on earlier ones. Please start withTODO 6.
 
 class FloorPlan:
     """Owns the painted tiles and the interior walls.
@@ -63,9 +64,11 @@ class FloorPlan:
         TODO 9
         This is how clicking on a room selects it.
 
-        Loop over self.rooms() and ask each one whether it contains the tile,
-        using the method you wrote in TODO 5.  Return the first room that
-        does.  Return None when the tile is empty floor.
+        Loop over self.rooms() -- which returns a list -- and ask each element whether it contains the tile,
+        using the method you wrote in TODO 5 (in room.py).  Return the first room that does.  
+        Return None when the tile is empty floor (ie there is no room at that tile).
+        
+        Hint: to check whether a tile is in a room, you can use the "in" keyword.
         """
         return None
 
@@ -78,15 +81,17 @@ class FloorPlan:
         just True or False is what lets the game tell the player why.
 
         TODO 6
-        The message you return is shown on screen, so write it for a player,
-        not for a programmer.
+        The message you return is shown on screen, so write it for a player to read.
 
         Two things to check, in this order:
 
-          1. The whole rectangle must be inside the building.
+          1. The whole rectangle must be inside the building. To check that, call 
+             rectangle_is_inside_plan(rectangle, self).  It returns True when the 
+             rectangle is inside the plan, and False when it is not.  If it is not, 
+             return a message like "That area is outside the building."
              rectangle_is_inside_plan(rectangle, self) is imported for you.
              It still says yes to everything until you write TODO 13, so you
-             will not see this check bite yet - the game already stops your
+             will not see this check say no yet - the game already stops your
              drag at the edge of the grid.  Write the call anyway.
           2. No tile in the rectangle may already belong to a DIFFERENT room
              type.  tiles_in_rectangle(rectangle) gives you every tile to
@@ -98,6 +103,10 @@ class FloorPlan:
 
         While this returns None for everything, any area can be painted
         anywhere, including straight over another room.
+        
+        Hint: to check whether a tile is in the rectangle, you can use the "in" keyword.  
+        For example, if tile is a Tile object and rectangle is a Rectangle object, you can 
+        write "if tile in rectangle:" to check if the tile is inside the rectangle.
         """
         return None
 
@@ -136,7 +145,10 @@ class FloorPlan:
         not an error; they just do not count.
 
         If you cleared anything, call self.remove_stranded_walls() and then
-        self.design_changed().
+        self.design_changed() before returning.
+        
+        Hint: to delete a key from a dictionary, you can use the "del" keyword. 
+        For example, "del self.tiles[tile]" will remove the tile from the dictionary.
 
         Returns:
             The number of tiles cleared, as a whole number.
@@ -201,8 +213,10 @@ class FloorPlan:
         it wants.
 
         The budget bar will still read $0 after you write this, because
-        calculate_total_cost() is itself a stub until TODO 14.  That is not
-        your bug - it fills in two steps from now.
+        calculate_total_cost(...) will be fixed later.
+        
+        Hint: function definition looks like: def calculate_total_cost(rooms: list[Room])
+        Do we have a list of rooms we can get by calling self.some_function()?
         """
         return 0
 
