@@ -27,6 +27,10 @@ from constants import (
     WINDOW_HEIGHT,
     WINDOW_TITLE,
     WINDOW_WIDTH,
+    Edge,
+    Point,
+    Rectangle,
+    Tile,
 )
 from floor_plan import FloorPlan
 from grid import (
@@ -37,10 +41,11 @@ from grid import (
     screen_to_grid,
 )
 from renderer import Renderer
+from room import Room
 
 
 class Game:
-    def __init__(self):
+    def __init__(self) -> None:
         pygame.init()
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption(WINDOW_TITLE)
@@ -51,7 +56,7 @@ class Game:
         self.levels, self.level_errors = storage.load_all_levels(LEVEL_FILES)
 
         self.state = STATE_LEVEL_SELECT
-        self.level = None
+        self.level: dict | None = None
         self.floor_plan = FloorPlan(1, 1)
 
         # The tool the player is holding: a room type name, TOOL_ERASE, or
@@ -62,11 +67,11 @@ class Game:
         # because rooms are worked out fresh from the grid every time it
         # changes.  A room object from one moment would be a stale copy the
         # next.
-        self.selected_tile = None
+        self.selected_tile: Tile | None = None
 
         # Painting drag.
-        self.drag_start_tile = None
-        self.drag_rectangle = None
+        self.drag_start_tile: Tile | None = None
+        self.drag_rectangle: Rectangle | None = None
         self.drag_is_valid = False
 
         # Wall drag.  wall_drag_adds is decided by the first edge touched:
@@ -74,10 +79,10 @@ class Game:
         # out, so one tool does both without a separate eraser.
         self.wall_drag_active = False
         self.wall_drag_adds = True
-        self.hovered_edge = None
+        self.hovered_edge: Edge | None = None
 
-        self.requirement_results = []
-        self.score_result = None
+        self.requirement_results: list[dict] = []
+        self.score_result: dict | None = None
 
         self.message = ""
         self.message_frames_left = 0
@@ -91,7 +96,7 @@ class Game:
 
     # -- main loop ---------------------------------------------------------
 
-    def run(self):
+    def run(self) -> None:
         while self.running:
             for event in pygame.event.get():
                 self.handle_event(event)
@@ -100,11 +105,11 @@ class Game:
             self.clock.tick(FRAMES_PER_SECOND)
         pygame.quit()
 
-    def update(self):
+    def update(self) -> None:
         if self.message_frames_left > 0:
             self.message_frames_left -= 1
 
-    def draw(self):
+    def draw(self) -> None:
         if self.state == STATE_LEVEL_SELECT:
             self.renderer.draw_level_select(
                 self.levels, self.level_buttons, pygame.mouse.get_pos(), self.level_errors
@@ -117,7 +122,7 @@ class Game:
 
     # -- events ------------------------------------------------------------
 
-    def handle_event(self, event):
+    def handle_event(self, event: pygame.event.Event) -> None:
         if event.type == pygame.QUIT:
             self.running = False
             return
@@ -129,13 +134,13 @@ class Game:
         else:
             self.handle_results_event(event)
 
-    def handle_level_select_event(self, event):
+    def handle_level_select_event(self, event: pygame.event.Event) -> None:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             for index, button in enumerate(self.level_buttons):
                 if button["rect"].collidepoint(event.pos):
                     self.start_level(self.levels[index])
 
-    def handle_designing_event(self, event):
+    def handle_designing_event(self, event: pygame.event.Event) -> None:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             self.handle_mouse_down(event.pos)
         elif event.type == pygame.MOUSEMOTION:
@@ -145,7 +150,7 @@ class Game:
         elif event.type == pygame.KEYDOWN:
             self.handle_key_down(event.key)
 
-    def handle_results_event(self, event):
+    def handle_results_event(self, event: pygame.event.Event) -> None:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             for button in self.results_buttons:
                 if button["rect"].collidepoint(event.pos):
@@ -158,7 +163,7 @@ class Game:
 
     # -- mouse -------------------------------------------------------------
 
-    def handle_mouse_down(self, position):
+    def handle_mouse_down(self, position: Point) -> None:
         for button in self.palette_buttons + self.tool_buttons:
             if button["rect"].collidepoint(position):
                 self.selected_tool = button["tool"]
@@ -184,7 +189,7 @@ class Game:
         self.drag_start_tile = (grid_x, grid_y)
         self.update_drag((grid_x, grid_y))
 
-    def handle_mouse_motion(self, position):
+    def handle_mouse_motion(self, position: Point) -> None:
         if self.selected_tool == TOOL_WALL:
             self.hovered_edge = edge_at_screen_position(
                 self.floor_plan, position[0], position[1]
@@ -203,7 +208,7 @@ class Game:
         end_tile = clamp_to_plan(self.floor_plan, grid_x, grid_y)
         self.update_drag(end_tile)
 
-    def handle_mouse_up(self, position):
+    def handle_mouse_up(self, position: Point) -> None:
         if self.wall_drag_active:
             self.wall_drag_active = False
             self.refresh_requirements()
@@ -235,7 +240,7 @@ class Game:
         self.floor_plan.paint(rectangle, self.selected_tool)
         self.refresh_requirements()
 
-    def update_drag(self, end_tile):
+    def update_drag(self, end_tile: Tile) -> None:
         """Work out the area the player is currently dragging out."""
         self.drag_rectangle = rectangle_from_drag(self.drag_start_tile, end_tile)
         if self.selected_tool == TOOL_ERASE:
@@ -247,7 +252,7 @@ class Game:
 
     # -- walls -------------------------------------------------------------
 
-    def start_wall_drag(self, position):
+    def start_wall_drag(self, position: Point) -> None:
         edge = edge_at_screen_position(self.floor_plan, position[0], position[1])
         if edge is None:
             return
@@ -256,7 +261,7 @@ class Game:
         self.wall_drag_active = True
         self.apply_wall_at(position)
 
-    def apply_wall_at(self, position):
+    def apply_wall_at(self, position: Point) -> None:
         edge = edge_at_screen_position(self.floor_plan, position[0], position[1])
         if edge is None:
             return
@@ -267,7 +272,7 @@ class Game:
 
     # -- selection ---------------------------------------------------------
 
-    def selected_room(self):
+    def selected_room(self) -> Room | None:
         """Return the room the player has selected, or None.
 
         Worked out from the selected tile each time it is asked for, so it is
@@ -277,7 +282,7 @@ class Game:
             return None
         return self.floor_plan.room_at_position(self.selected_tile[0], self.selected_tile[1])
 
-    def selected_cost_per_tile(self):
+    def selected_cost_per_tile(self) -> int:
         """Return the price per tile of the held tool, or 0 for a non-room tool."""
         settings = ROOM_TYPES.get(self.selected_tool)
         if settings is None:
@@ -286,7 +291,7 @@ class Game:
 
     # -- keyboard ----------------------------------------------------------
 
-    def handle_key_down(self, key):
+    def handle_key_down(self, key: int) -> None:
         if key in (pygame.K_DELETE, pygame.K_BACKSPACE):
             self.do_action("delete")
         elif key == pygame.K_e:
@@ -311,7 +316,7 @@ class Game:
 
     # -- actions -----------------------------------------------------------
 
-    def do_action(self, action):
+    def do_action(self, action: str) -> None:
         if action == "delete":
             self.delete_selected_room()
         elif action == "save":
@@ -328,7 +333,7 @@ class Game:
         elif action == "levels":
             self.state = STATE_LEVEL_SELECT
 
-    def delete_selected_room(self):
+    def delete_selected_room(self) -> None:
         room = self.selected_room()
         if room is None:
             self.set_message("Select a room first.", is_error=True)
@@ -339,7 +344,7 @@ class Game:
         self.refresh_requirements()
         self.set_message("Deleted the " + name + ".")
 
-    def save_design(self):
+    def save_design(self) -> None:
         try:
             storage.save_design(
                 DEFAULT_SAVE_FILE, self.floor_plan, self.level.get("level_id", "unknown")
@@ -349,7 +354,7 @@ class Game:
             return
         self.set_message("Design saved to " + DEFAULT_SAVE_FILE + ".")
 
-    def load_design(self):
+    def load_design(self) -> None:
         try:
             design = storage.load_design(DEFAULT_SAVE_FILE)
         except ValueError as error:
@@ -383,13 +388,13 @@ class Game:
         else:
             self.set_message("Design loaded.")
 
-    def check_design(self):
+    def check_design(self) -> None:
         self.score_result = rules.calculate_score(self.floor_plan, self.level)
         self.state = STATE_RESULTS
 
     # -- level handling ----------------------------------------------------
 
-    def start_level(self, level):
+    def start_level(self, level: dict) -> None:
         self.level = level
         # .get() with a fallback so a half-written level file gives a small
         # empty grid rather than a crash on the way into the design screen.
@@ -406,7 +411,7 @@ class Game:
         self.message = ""
         self.message_frames_left = 0
 
-    def refresh_requirements(self):
+    def refresh_requirements(self) -> None:
         """Recalculate the requirement list after the design changed.
 
         This runs once per change rather than once per frame: the answer only
@@ -414,7 +419,7 @@ class Game:
         """
         self.requirement_results = rules.check_requirements(self.floor_plan, self.level)
 
-    def set_message(self, text, is_error=False):
+    def set_message(self, text: str, is_error: bool = False) -> None:
         self.message = text
         self.message_is_error = is_error
         self.message_frames_left = MESSAGE_FRAMES
@@ -428,12 +433,12 @@ class Game:
 # ---------------------------------------------------------------------------
 
 
-def point_is_in_rect(point, rect):
+def point_is_in_rect(point: Point, rect: tuple[int, int, int, int]) -> bool:
     x, y, width, height = rect
     return x <= point[0] < x + width and y <= point[1] < y + height
 
 
-def build_level_buttons(level_count):
+def build_level_buttons(level_count: int) -> list[dict]:
     buttons = []
     for index in range(level_count):
         rect = pygame.Rect(150, 180 + index * 164, 800, 140)
@@ -441,7 +446,7 @@ def build_level_buttons(level_count):
     return buttons
 
 
-def build_palette_buttons():
+def build_palette_buttons() -> list[dict]:
     buttons = []
     x = SIDEBAR_RECT[0] + 16
     width = SIDEBAR_RECT[2] - 32
@@ -458,7 +463,7 @@ def build_palette_buttons():
     return buttons
 
 
-def build_tool_buttons():
+def build_tool_buttons() -> list[dict]:
     x = SIDEBAR_RECT[0] + 16
     width = (SIDEBAR_RECT[2] - 32 - 8) // 2
     return [
@@ -477,7 +482,7 @@ def build_tool_buttons():
     ]
 
 
-def build_toolbar_buttons():
+def build_toolbar_buttons() -> list[dict]:
     labels_and_actions = [
         ("Delete", "delete"),
         ("Save", "save"),
@@ -493,7 +498,7 @@ def build_toolbar_buttons():
     return buttons
 
 
-def build_results_buttons():
+def build_results_buttons() -> list[dict]:
     panel_x, panel_y, panel_width, panel_height = RESULTS_PANEL_RECT
     button_y = panel_y + panel_height - 56
     center_x = panel_x + panel_width // 2

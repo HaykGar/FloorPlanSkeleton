@@ -4,7 +4,7 @@ from floor_plan import FloorPlan
 from rules import wall_key
 
 
-def make_plan():
+def make_plan() -> FloorPlan:
     return FloorPlan(12, 10)
 
 def test_painting_over_another_room_type_is_refused():

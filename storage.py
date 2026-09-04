@@ -7,15 +7,17 @@ ValueError with a message that is safe to show the player.
 
 import json
 import os
+from typing import Any
 
-from constants import LEVELS_FOLDER, ROOM_TYPES
+from constants import LEVELS_FOLDER, ROOM_TYPES, Edge, Tile
+from floor_plan import FloorPlan
 from rules import wall_key
 
 
 PROJECT_FOLDER = os.path.dirname(os.path.abspath(__file__))
 
 
-def level_path(file_name):
+def level_path(file_name: str) -> str:
     """Return the full path to a level file.
 
     Building the path from this file's own location means the game runs the
@@ -24,12 +26,12 @@ def level_path(file_name):
     return os.path.join(PROJECT_FOLDER, LEVELS_FOLDER, file_name)
 
 
-def design_path(file_name):
+def design_path(file_name: str) -> str:
     """Return the full path to a saved design file."""
     return os.path.join(PROJECT_FOLDER, file_name)
 
 
-def read_json_file(path, what_it_is):
+def read_json_file(path: str, what_it_is: str) -> Any:
     """Read one JSON file and return the data inside it.
 
     'what_it_is' is a word like "level" or "saved design", used to build the
@@ -75,7 +77,7 @@ REQUIRED_LEVEL_KEYS = [
 ]
 
 
-def load_level(file_name):
+def load_level(file_name: str) -> dict:
     """Load one level file and check that it makes sense.
 
     Returns the level as a dictionary.  Raises ValueError with a readable
@@ -154,7 +156,7 @@ def load_level(file_name):
     }
 
 
-def load_all_levels(file_names):
+def load_all_levels(file_names: list[str]) -> tuple[list[dict], list[str]]:
     """Load several levels, skipping any that are broken.
 
     Returns (levels, error_messages) so the game can still start with the
@@ -179,7 +181,7 @@ def load_all_levels(file_names):
 # ---------------------------------------------------------------------------
 
 
-def save_design(file_name, floor_plan, level_id):
+def save_design(file_name: str, floor_plan: FloorPlan, level_id: str) -> str:
     """Write the current design to a JSON file.
 
     Raises ValueError when the file cannot be written.
@@ -217,7 +219,7 @@ def save_design(file_name, floor_plan, level_id):
     return design_path(file_name)
 
 
-def whole_number(data, key, what_it_is):
+def whole_number(data: dict, key: str, what_it_is: str) -> int:
     """Return data[key], checking that it is a whole number."""
     if key not in data:
         raise ValueError("A saved " + what_it_is + " is missing '" + key + "'.")
@@ -227,7 +229,7 @@ def whole_number(data, key, what_it_is):
     return value
 
 
-def tiles_from_data(tile_list):
+def tiles_from_data(tile_list: list) -> dict[Tile, str]:
     """Turn the saved tile list back into a {tile: room_type} dictionary.
 
     TODO 19
@@ -249,7 +251,7 @@ def tiles_from_data(tile_list):
     return {}
 
 
-def walls_from_data(wall_list):
+def walls_from_data(wall_list: list) -> set[Edge]:
     """Turn the saved wall list back into a set of wall keys."""
     walls = set()
     for entry in wall_list:
@@ -268,7 +270,7 @@ def walls_from_data(wall_list):
     return walls
 
 
-def load_design(file_name):
+def load_design(file_name: str) -> dict:
     """Read a saved design back from a JSON file.
 
     Returns {"level": level_id, "tiles": {...}, "walls": {...}}.

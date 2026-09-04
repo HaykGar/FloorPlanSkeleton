@@ -9,6 +9,8 @@ A test passes when it finishes without an AssertionError.
 import os
 import sys
 import traceback
+from collections.abc import Callable
+from types import ModuleType
 
 
 PROJECT_FOLDER = os.path.dirname(os.path.abspath(__file__))
@@ -26,7 +28,7 @@ TEST_MODULE_NAMES = [
 ]
 
 
-def collect_tests(module):
+def collect_tests(module: ModuleType) -> list[tuple[str, Callable[[], None]]]:
     """Return every test function inside one test module, in file order."""
     functions = []
     for name in dir(module):
@@ -35,7 +37,7 @@ def collect_tests(module):
     return functions
 
 
-def run_module(module_name):
+def run_module(module_name: str) -> tuple[int, int]:
     """Run one test module and return (passed, failed)."""
     module = __import__(module_name)
     print("\n" + module_name)
@@ -61,7 +63,7 @@ def run_module(module_name):
     return passed, failed
 
 
-def main():
+def main() -> int:
     total_passed = 0
     total_failed = 0
     for module_name in TEST_MODULE_NAMES:

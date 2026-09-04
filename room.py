@@ -9,20 +9,22 @@ Rooms are *worked out* from the grid rather than stored.  See
 rules.find_rooms().
 """
 
-from constants import ROOM_TYPES, COLOR_ROOM_DEFAULT
+from typing import Any
+
+from constants import ROOM_TYPES, COLOR_ROOM_DEFAULT, Color, Tile
 
 
 class Room:
     """A connected group of same-type tiles."""
 
-    def __init__(self, room_type, tiles, cost_per_tile):
+    def __init__(self, room_type: str, tiles: set[Tile], cost_per_tile: int) -> None:
         self.room_type = room_type
         # A set, because the order of the tiles never matters and "is this
         # tile in the room?" is asked constantly.
         self.tiles = set(tiles)
         self.cost_per_tile = cost_per_tile
 
-    def area(self):
+    def area(self) -> int:
         """Return how many grid tiles this room covers.
 
         TODO 3
@@ -35,7 +37,7 @@ class Room:
         """
         return 0
 
-    def cost(self):
+    def cost(self) -> int:
         """Return the total cost of building this room.
 
         TODO 4
@@ -47,7 +49,7 @@ class Room:
         """
         return 0
 
-    def contains_grid_position(self, grid_x, grid_y):
+    def contains_grid_position(self, grid_x: int, grid_y: int) -> bool:
         """Return True when the tile (grid_x, grid_y) is part of this room.
 
         TODO 5
@@ -60,7 +62,7 @@ class Room:
         """
         return False
 
-    def bounding_box(self):
+    def bounding_box(self) -> tuple[int, int, int, int]:
         """Return (min_x, min_y, max_x, max_y) of the tiles in this room.
 
         Used only for drawing.  The room itself may be any shape inside it.
@@ -69,7 +71,7 @@ class Room:
         ys = [tile[1] for tile in self.tiles]
         return (min(xs), min(ys), max(xs), max(ys))
 
-    def label_tile(self):
+    def label_tile(self) -> Tile:
         """Return a tile near the middle of the room, for drawing its name.
 
         The middle of an L-shaped room can fall outside the room, so we take
@@ -82,16 +84,16 @@ class Room:
             key=lambda tile: (tile[0] - average_x) ** 2 + (tile[1] - average_y) ** 2,
         )
 
-    def display_name(self):
+    def display_name(self) -> str:
         """Return the human-readable name of this room's type."""
         return room_type_setting(self.room_type, "display_name", self.room_type)
 
-    def color(self):
+    def color(self) -> Color:
         """Return the fill colour for this room."""
         return room_type_setting(self.room_type, "color", COLOR_ROOM_DEFAULT)
 
 
-def room_type_setting(room_type, setting_name, fallback):
+def room_type_setting(room_type: str, setting_name: str, fallback: Any) -> Any:
     """Look up one setting for a room type, or return fallback if it is missing.
 
     Saved files and level files are written by hand, so an unknown room type

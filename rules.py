@@ -4,13 +4,25 @@ Nothing in this file draws anything or reads the mouse.  These are plain
 calculations, which is exactly why they are easy to test.
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from constants import (
     MAX_BUDGET_BONUS,
     MAX_SPACE_BONUS,
     POINTS_PER_REQUIREMENT,
     ROOM_TYPES,
+    Edge,
+    Rectangle,
+    Tile,
 )
 from room import Room, room_type_setting
+
+if TYPE_CHECKING:
+    # floor_plan.py imports this file, so importing it back at run time would
+    # be a circular import.  This import only happens for the type hints.
+    from floor_plan import FloorPlan
 
 
 # ---------------------------------------------------------------------------
@@ -18,7 +30,7 @@ from room import Room, room_type_setting
 # ---------------------------------------------------------------------------
 
 
-def neighbours(tile):
+def neighbours(tile: Tile) -> list[Tile]:
     """Return the four tiles that share a wall with this one.
 
     TODO 11
@@ -38,7 +50,7 @@ def neighbours(tile):
     return []
 
 
-def wall_key(tile_a, tile_b):
+def wall_key(tile_a: Tile, tile_b: Tile) -> Edge:
     """Return the standard way of naming the wall between two tiles.
 
     A wall sits between two tiles, and the pair (A, B) means the same wall as
@@ -48,7 +60,9 @@ def wall_key(tile_a, tile_b):
     return tuple(sorted([tuple(tile_a), tuple(tile_b)]))
 
 
-def tiles_are_joined(tile_a, tile_b, tiles, walls):
+def tiles_are_joined(
+    tile_a: Tile, tile_b: Tile, tiles: dict[Tile, str], walls: set[Edge]
+) -> bool:
     """Return True when two neighbouring tiles belong to the same room.
 
     Two tiles are joined when they are both painted, both painted with the
@@ -74,7 +88,7 @@ def tiles_are_joined(tile_a, tile_b, tiles, walls):
     return False
 
 
-def tiles_in_rectangle(rectangle):
+def tiles_in_rectangle(rectangle: Rectangle) -> set[Tile]:
     """Return the set of tiles covered by (grid_x, grid_y, width, height)."""
     grid_x, grid_y, width, height = rectangle
     return {
@@ -84,7 +98,7 @@ def tiles_in_rectangle(rectangle):
     }
 
 
-def rectangle_is_inside_plan(rectangle, floor_plan):
+def rectangle_is_inside_plan(rectangle: Rectangle, floor_plan: FloorPlan) -> bool:
     """Return True when every tile of the rectangle is inside the building.
 
     TODO 13
@@ -107,7 +121,7 @@ def rectangle_is_inside_plan(rectangle, floor_plan):
 # ---------------------------------------------------------------------------
 
 
-def find_rooms(tiles, walls):
+def find_rooms(tiles: dict[Tile, str], walls: set[Edge]) -> list[Room]:
     """Work out the rooms in a design.
 
     'tiles' maps a tile to its room type.  'walls' is a set of wall_key()s.
@@ -159,7 +173,7 @@ def find_rooms(tiles, walls):
     return rooms
 
 
-def rooms_are_adjacent(room1, room2):
+def rooms_are_adjacent(room1: Room, room2: Room) -> bool:
     """Return True when the two rooms share part of a wall.
 
     Any tile of one room neighbouring any tile of the other is enough.
@@ -191,7 +205,7 @@ def rooms_are_adjacent(room1, room2):
 # ---------------------------------------------------------------------------
 
 
-def calculate_total_cost(rooms):
+def calculate_total_cost(rooms: list[Room]) -> int:
     """Return the combined cost of every room in the list.
 
     TODO 14
@@ -205,12 +219,12 @@ def calculate_total_cost(rooms):
     return 0
 
 
-def calculate_used_tiles(rooms):
+def calculate_used_tiles(rooms: list[Room]) -> int:
     """Return how many grid tiles are covered by rooms."""
     return sum(room.area() for room in rooms)
 
 
-def minimum_area_for(room_type, level):
+def minimum_area_for(room_type: str, level: dict) -> int:
     """Return the smallest allowed area for a room type on this level.
 
     Each room type has a sensible default in constants.py.  A level may
@@ -223,7 +237,7 @@ def minimum_area_for(room_type, level):
     return max(default_minimum, level_minimum)
 
 
-def rooms_of_type(rooms, room_type):
+def rooms_of_type(rooms: list[Room], room_type: str) -> list[Room]:
     """Return only the rooms that have the given type."""
     return [room for room in rooms if room.room_type == room_type]
 
@@ -233,7 +247,7 @@ def rooms_of_type(rooms, room_type):
 # ---------------------------------------------------------------------------
 
 
-def any_pair_is_adjacent(rooms_a, rooms_b):
+def any_pair_is_adjacent(rooms_a: list[Room], rooms_b: list[Room]) -> bool:
     """Return True when at least one room from each list shares a wall."""
     for room_a in rooms_a:
         for room_b in rooms_b:
@@ -242,7 +256,7 @@ def any_pair_is_adjacent(rooms_a, rooms_b):
     return False
 
 
-def check_one_requirement(requirement, floor_plan, level):
+def check_one_requirement(requirement: dict, floor_plan: FloorPlan, level: dict) -> bool:
     """Return True when this single client requirement is satisfied."""
     kind = requirement.get("kind")
     rooms = floor_plan.rooms()
@@ -284,7 +298,7 @@ def check_one_requirement(requirement, floor_plan, level):
     return False
 
 
-def check_requirements(floor_plan, level):
+def check_requirements(floor_plan: FloorPlan, level: dict) -> list[dict]:
     """Check every requirement of the level.
 
     Returns a list of dictionaries, one per requirement:
@@ -305,7 +319,7 @@ def check_requirements(floor_plan, level):
     return results
 
 
-def describe_requirement(requirement):
+def describe_requirement(requirement: dict) -> str:
     """Return the text shown to the player for one requirement."""
     if "description" in requirement:
         return requirement["description"]
@@ -313,7 +327,7 @@ def describe_requirement(requirement):
     return str(requirement.get("kind", "unknown requirement"))
 
 
-def count_passed(results):
+def count_passed(results: list[dict]) -> int:
     """Return how many requirement results passed."""
     return sum(1 for result in results if result["passed"])
 
@@ -323,7 +337,7 @@ def count_passed(results):
 # ---------------------------------------------------------------------------
 
 
-def calculate_score(floor_plan, level):
+def calculate_score(floor_plan: FloorPlan, level: dict) -> dict:
     """Score a finished design and explain where the points came from.
 
     The formula has three parts:

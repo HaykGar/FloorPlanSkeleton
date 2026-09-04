@@ -5,6 +5,10 @@ decides whether an area can be painted, what a design costs, or whether the
 client is happy: it is handed those answers and puts them on the screen.
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import pygame
 
 from constants import (
@@ -39,14 +43,24 @@ from constants import (
     WALL_THICKNESS,
     WINDOW_HEIGHT,
     WINDOW_WIDTH,
+    Color,
+    Edge,
+    Point,
 )
+from floor_plan import FloorPlan
 from grid import grid_origin, grid_to_screen, tile_size
+from room import Room
+
+if TYPE_CHECKING:
+    # game.py imports this file, so importing it back at run time would be
+    # a circular import.  This import only happens for the type hints.
+    from game import Game
 
 
 FONT_NAMES = "Helvetica Neue,Helvetica,Arial,DejaVu Sans"
 
 
-def room_color(room, level):
+def room_color(room: Room, level: dict | None) -> Color:
     """Return the fill colour for a room, honouring any level override."""
     overrides = level.get("room_colors", {}) if level else {}
     if room.room_type in overrides:
@@ -55,22 +69,22 @@ def room_color(room, level):
     return settings.get("color", COLOR_ROOM_DEFAULT)
 
 
-def darken(color, amount=60):
+def darken(color: Color, amount: int = 60) -> Color:
     """Return a darker version of a colour, used for borders and shadows."""
     return tuple(max(0, channel - amount) for channel in color[:3])
 
 
-def lighten(color, amount=40):
+def lighten(color: Color, amount: int = 40) -> Color:
     """Return a lighter version of a colour."""
     return tuple(min(255, channel + amount) for channel in color[:3])
 
 
-def format_money(amount):
+def format_money(amount: int) -> str:
     """Return a number as a readable price, for example $118,000."""
     return "${:,}".format(int(amount))
 
 
-def room_outline_segments(room, floor_plan):
+def room_outline_segments(room: Room, floor_plan: FloorPlan) -> list[tuple[Point, Point]]:
     """Return the pixel line segments that trace the edge of a room.
 
     A room can be any shape, so its outline is not a rectangle.  A tile's
@@ -97,7 +111,7 @@ def room_outline_segments(room, floor_plan):
     return segments
 
 
-def wall_segment(floor_plan, edge):
+def wall_segment(floor_plan: FloorPlan, edge: Edge) -> tuple[Point, Point]:
     """Return the two pixel endpoints of the line for one interior wall."""
     tile_a, tile_b = edge
     size = tile_size(floor_plan)
@@ -117,7 +131,7 @@ def wall_segment(floor_plan, edge):
 class Renderer:
     """Owns the window and the fonts, and draws every screen."""
 
-    def __init__(self, screen):
+    def __init__(self, screen: pygame.Surface) -> None:
         self.screen = screen
         # Fonts are created once here.  Building a font every frame is one of
         # the easiest ways to make a Pygame program stutter.
@@ -130,7 +144,15 @@ class Renderer:
 
     # -- small drawing helpers ---------------------------------------------
 
-    def draw_text(self, text, font, color, x, y, align="left"):
+    def draw_text(
+        self,
+        text: str,
+        font: pygame.font.Font,
+        color: Color,
+        x: int,
+        y: int,
+        align: str = "left",
+    ) -> pygame.Rect:
         """Draw one line of text and return the rectangle it filled."""
         surface = font.render(str(text), True, color)
         rect = surface.get_rect()
@@ -143,7 +165,16 @@ class Renderer:
         self.screen.blit(surface, rect)
         return rect
 
-    def draw_wrapped_text(self, text, font, color, x, y, max_width, line_height=18):
+    def draw_wrapped_text(
+        self,
+        text: str,
+        font: pygame.font.Font,
+        color: Color,
+        x: int,
+        y: int,
+        max_width: int,
+        line_height: int = 18,
+    ) -> int:
         """Draw text broken across several lines so it fits max_width pixels."""
         words = str(text).split()
         line = ""
@@ -161,7 +192,7 @@ class Renderer:
             current_y += line_height
         return current_y
 
-    def font_that_fits(self, text, max_width):
+    def font_that_fits(self, text: str, max_width: int) -> pygame.font.Font:
         """Return the largest of our body fonts that fits text into max_width.
 
         Level files are written by hand, so a long client requirement should
@@ -172,12 +203,25 @@ class Renderer:
                 return font
         return self.font_tiny
 
-    def draw_panel(self, rect, color=COLOR_PANEL, edge=COLOR_PANEL_EDGE, radius=10):
+    def draw_panel(
+        self,
+        rect: pygame.Rect | tuple[int, int, int, int],
+        color: Color = COLOR_PANEL,
+        edge: Color = COLOR_PANEL_EDGE,
+        radius: int = 10,
+    ) -> None:
         """Draw one of the rounded background panels."""
         pygame.draw.rect(self.screen, color, rect, border_radius=radius)
         pygame.draw.rect(self.screen, edge, rect, width=1, border_radius=radius)
 
-    def draw_button(self, button, mouse_position, is_active=False, enabled=True, font=None):
+    def draw_button(
+        self,
+        button: dict,
+        mouse_position: Point,
+        is_active: bool = False,
+        enabled: bool = True,
+        font: pygame.font.Font | None = None,
+    ) -> None:
         """Draw a button dictionary: {"label": ..., "rect": ..., "action": ...}."""
         rect = button["rect"]
         hovered = enabled and rect.collidepoint(mouse_position)
@@ -201,7 +245,7 @@ class Renderer:
         label_y = rect.y + (rect.height - font.get_height()) // 2
         self.draw_text(button["label"], font, text_color, rect.centerx, label_y, "center")
 
-    def draw_translucent_rect(self, rect, color, alpha):
+    def draw_translucent_rect(self, rect: pygame.Rect, color: Color, alpha: int) -> None:
         """Draw a see-through rectangle, used for drag previews."""
         surface = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
         surface.fill((color[0], color[1], color[2], alpha))
@@ -209,7 +253,13 @@ class Renderer:
 
     # -- level select screen -----------------------------------------------
 
-    def draw_level_select(self, levels, buttons, mouse_position, error_messages):
+    def draw_level_select(
+        self,
+        levels: list[dict],
+        buttons: list[dict],
+        mouse_position: Point,
+        error_messages: list[str],
+    ) -> None:
         """Draw the screen where the player picks a client brief."""
         self.screen.fill(COLOR_BACKGROUND)
 
@@ -266,7 +316,7 @@ class Renderer:
 
     # -- design screen -----------------------------------------------------
 
-    def draw_design(self, game):
+    def draw_design(self, game: Game) -> None:
         """Draw the main design studio."""
         self.screen.fill(COLOR_BACKGROUND)
         self.draw_banner(game.level)
@@ -275,7 +325,7 @@ class Renderer:
         self.draw_toolbar(game)
         self.draw_message(game)
 
-    def draw_banner(self, level):
+    def draw_banner(self, level: dict) -> None:
         self.draw_panel(BANNER_RECT, COLOR_PANEL, COLOR_PANEL_EDGE, radius=0)
         self.draw_text("CLIENT", self.font_tiny, COLOR_ACCENT, 20, 12)
         self.draw_text(level.get("name", "Unnamed level"), self.font_heading, COLOR_TEXT, 20, 26)
@@ -288,7 +338,7 @@ class Renderer:
             "right",
         )
 
-    def draw_grid_area(self, game):
+    def draw_grid_area(self, game: Game) -> None:
         self.draw_panel(GRID_AREA_RECT, COLOR_GRID_BACKGROUND, COLOR_PANEL_EDGE)
 
         floor_plan = game.floor_plan
@@ -336,7 +386,7 @@ class Renderer:
         elif game.drag_rectangle is not None:
             self.draw_preview(game)
 
-    def draw_room(self, room, floor_plan, level):
+    def draw_room(self, room: Room, floor_plan: FloorPlan, level: dict | None) -> None:
         """Draw one room: its tiles, its outline, and its label."""
         size = tile_size(floor_plan)
         color = room_color(room, level)
@@ -350,7 +400,7 @@ class Renderer:
 
         self.draw_room_label(room, floor_plan, color, size)
 
-    def draw_room_label(self, room, floor_plan, color, size):
+    def draw_room_label(self, room: Room, floor_plan: FloorPlan, color: Color, size: int) -> None:
         """Draw the room's name and area, if the room is big enough to hold it."""
         label = room.display_name()
         if room.area() < 4 or self.font_room.size(label)[0] > size * 3:
@@ -373,7 +423,7 @@ class Renderer:
             "center",
         )
 
-    def draw_preview(self, game):
+    def draw_preview(self, game: Game) -> None:
         """Draw the area the player is currently dragging out."""
         grid_x, grid_y, width, height = game.drag_rectangle
         floor_plan = game.floor_plan
@@ -398,7 +448,7 @@ class Renderer:
             label = "{} x {}  =  {} tiles   {}".format(width, height, area, format_money(cost))
         self.draw_text(label, self.font_small, COLOR_TEXT, rect.centerx, rect.y - 18, "center")
 
-    def draw_sidebar(self, game):
+    def draw_sidebar(self, game: Game) -> None:
         self.draw_panel(SIDEBAR_RECT, COLOR_PANEL, COLOR_PANEL_EDGE)
         sidebar_x = SIDEBAR_RECT[0] + 16
         inner_width = SIDEBAR_RECT[2] - 32
@@ -429,7 +479,9 @@ class Renderer:
             self.draw_text(result["description"], font, COLOR_TEXT, text_x, y)
             y += 21
 
-    def draw_palette_button(self, button, mouse_position, is_active, level):
+    def draw_palette_button(
+        self, button: dict, mouse_position: Point, is_active: bool, level: dict | None
+    ) -> None:
         """Draw one room-type button, including its colour swatch and price."""
         rect = button["rect"]
         hovered = rect.collidepoint(mouse_position)
@@ -454,7 +506,7 @@ class Renderer:
             rect.y + 24,
         )
 
-    def draw_selected_room_box(self, game, x, y, width):
+    def draw_selected_room_box(self, game: Game, x: int, y: int, width: int) -> None:
         self.draw_text("SELECTED ROOM", self.font_tiny, COLOR_ACCENT, x, y)
         room = game.selected_room()
         if room is None:
@@ -466,7 +518,7 @@ class Renderer:
         )
         self.draw_text(format_money(room.cost()), self.font_small, COLOR_WARNING, x + width, y + 36, "right")
 
-    def draw_budget_box(self, game, x, y, width):
+    def draw_budget_box(self, game: Game, x: int, y: int, width: int) -> None:
         total_cost = game.floor_plan.total_cost()
         budget = game.level.get("budget", 0)
         over_budget = total_cost > budget
@@ -497,7 +549,7 @@ class Renderer:
                 y + 54,
             )
 
-    def draw_toolbar(self, game):
+    def draw_toolbar(self, game: Game) -> None:
         self.draw_panel(TOOLBAR_RECT, COLOR_PANEL, COLOR_PANEL_EDGE, radius=0)
         mouse_position = pygame.mouse.get_pos()
         for button in game.toolbar_buttons:
@@ -506,7 +558,7 @@ class Renderer:
                 enabled = game.selected_room() is not None
             self.draw_button(button, mouse_position, enabled=enabled)
 
-    def draw_message(self, game):
+    def draw_message(self, game: Game) -> None:
         """Draw the short status message that appears after an action."""
         if not game.message or game.message_frames_left <= 0:
             return
@@ -530,7 +582,7 @@ class Renderer:
 
     # -- results screen ----------------------------------------------------
 
-    def draw_results(self, game):
+    def draw_results(self, game: Game) -> None:
         """Draw the design screen with the score summary on top of it."""
         self.draw_design(game)
 

@@ -4,6 +4,32 @@ Everything in this file is data: sizes, colours, and room-type settings.
 No game rules and no drawing code belong here.
 """
 
+from typing import Any
+
+# ---------------------------------------------------------------------------
+# Type names
+#
+# These are not values.  They are names for the shapes of data that pass
+# between modules, used in type hints: a hint like `tile: Tile` says "this
+# argument is an (x, y) pair" without the reader having to work it out.
+# ---------------------------------------------------------------------------
+
+# A grid tile, as (grid_x, grid_y).
+Tile = tuple[int, int]
+
+# A pixel position on screen, as (x, y).  The same shape as a Tile with a
+# different meaning — converting between the two is what grid.py is for.
+Point = tuple[int, int]
+
+# An area of the grid, as (grid_x, grid_y, width, height).
+Rectangle = tuple[int, int, int, int]
+
+# One interior wall: the two tiles either side of it, in wall_key() order.
+Edge = tuple[Tile, Tile]
+
+# A colour, as (red, green, blue), each from 0 to 255.
+Color = tuple[int, int, int]
+
 # ---------------------------------------------------------------------------
 # Window
 # ---------------------------------------------------------------------------
@@ -79,7 +105,7 @@ WALL_THICKNESS = 5
 #   color          fill colour on the floor plan.  A level may override it.
 # ---------------------------------------------------------------------------
 
-ROOM_TYPES = {
+ROOM_TYPES: dict[str, dict[str, Any]] = {
     "bedroom": {
         "display_name": "Bedroom",
         "cost_per_tile": 6000,

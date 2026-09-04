@@ -5,6 +5,7 @@ never leaves rubbish behind in the project folder.
 """
 
 import os
+from collections.abc import Callable
 
 import storage
 from floor_plan import FloorPlan
@@ -14,16 +15,16 @@ from rules import wall_key
 TEMPORARY_FILE = "test_temporary_design.json"
 
 
-def remove_temporary_file():
+def remove_temporary_file() -> None:
     path = storage.design_path(TEMPORARY_FILE)
     if os.path.exists(path):
         os.remove(path)
 
-def write_temporary_file(text):
+def write_temporary_file(text: str) -> None:
     with open(storage.design_path(TEMPORARY_FILE), "w") as file:
         file.write(text)
 
-def expect_value_error(function, must_contain=""):
+def expect_value_error(function: Callable[[], object], must_contain: str = "") -> None:
     """Run a function that should raise ValueError, and check its message."""
     try:
         function()

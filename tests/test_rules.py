@@ -1,5 +1,6 @@
 """Tests for finding rooms, the geometry rules, and scoring."""
 
+from constants import Tile
 from floor_plan import FloorPlan
 from room import Room
 from rules import (
@@ -16,7 +17,7 @@ from rules import (
 )
 
 
-def block(room_type, grid_x, grid_y, width, height):
+def block(room_type: str, grid_x: int, grid_y: int, width: int, height: int) -> dict[Tile, str]:
     """Build a {tile: room_type} dictionary for a rectangle of tiles."""
     return {
         (grid_x + column, grid_y + row): room_type
@@ -44,7 +45,7 @@ def test_rooms_touching_only_at_a_corner_are_not_adjacent():
     living = Room("living_room", tiles_in_rectangle((4, 4, 3, 3)), 100)
     assert rooms_are_adjacent(kitchen, living) is False
 
-def make_level(requirements, budget=1000000):
+def make_level(requirements: list[dict], budget: int = 1000000) -> dict:
     return {
         "level_id": "test_level",
         "name": "Test Level",

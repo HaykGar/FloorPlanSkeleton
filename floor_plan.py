@@ -7,6 +7,8 @@ That is what makes two bedrooms painted next to each other become one
 bedroom: there was never a "bedroom object" to keep them apart.
 """
 
+from constants import Edge, Rectangle, Tile
+from room import Room
 from rules import (
     calculate_total_cost,
     find_rooms,
@@ -23,20 +25,20 @@ class FloorPlan:
     thrown away whenever the design changes.
     """
 
-    def __init__(self, width, height):
+    def __init__(self, width: int, height: int) -> None:
         self.width = width
         self.height = height
         # Maps a tile (x, y) to the name of the room type painted on it.
         # A tile that is not in the dictionary is empty floor.
-        self.tiles = {}
+        self.tiles: dict[Tile, str] = {}
         # A set of wall_key()s: the interior walls the player has drawn.
-        self.walls = set()
+        self.walls: set[Edge] = set()
         # Worked out on demand, and thrown away whenever the design changes.
-        self.cached_rooms = None
+        self.cached_rooms: list[Room] | None = None
 
     # -- rooms -------------------------------------------------------------
 
-    def rooms(self):
+    def rooms(self) -> list[Room]:
         """Return the list of rooms in the design.
 
         The flood fill is only worth doing when something has actually
@@ -47,7 +49,7 @@ class FloorPlan:
             self.cached_rooms = find_rooms(self.tiles, self.walls)
         return self.cached_rooms
 
-    def design_changed(self):
+    def design_changed(self) -> None:
         """Throw away the remembered room list.
 
         Every method that edits tiles or walls must call this.  Forgetting to
@@ -55,7 +57,7 @@ class FloorPlan:
         """
         self.cached_rooms = None
 
-    def room_at_position(self, grid_x, grid_y):
+    def room_at_position(self, grid_x: int, grid_y: int) -> Room | None:
         """Return the room covering the given tile, or None if it is empty.
 
         TODO 9
@@ -69,7 +71,7 @@ class FloorPlan:
 
     # -- painting ----------------------------------------------------------
 
-    def paint_error(self, rectangle, room_type):
+    def paint_error(self, rectangle: Rectangle, room_type: str) -> str | None:
         """Return a message explaining why an area cannot be painted.
 
         Returns None when the area is fine.  Returning the reason rather than
@@ -99,11 +101,11 @@ class FloorPlan:
         """
         return None
 
-    def can_paint(self, rectangle, room_type):
+    def can_paint(self, rectangle: Rectangle, room_type: str) -> bool:
         """Return True when the area may be painted."""
         return self.paint_error(rectangle, room_type) is None
 
-    def paint(self, rectangle, room_type):
+    def paint(self, rectangle: Rectangle, room_type: str) -> bool:
         """Paint an area with a room type if it is allowed.
 
         Painting next to an existing room of the same type joins them into
@@ -123,7 +125,7 @@ class FloorPlan:
         """
         return False
 
-    def erase(self, rectangle):
+    def erase(self, rectangle: Rectangle) -> int:
         """Clear every tile in an area.
 
         Returns how many tiles were actually cleared.
@@ -141,7 +143,7 @@ class FloorPlan:
         """
         return 0
 
-    def erase_room(self, room):
+    def erase_room(self, room: Room) -> None:
         """Clear every tile of one room."""
         for tile in room.tiles:
             if tile in self.tiles:
@@ -151,11 +153,11 @@ class FloorPlan:
 
     # -- walls -------------------------------------------------------------
 
-    def has_wall(self, edge):
+    def has_wall(self, edge: Edge) -> bool:
         """Return True when a wall has been drawn on this edge."""
         return edge in self.walls
 
-    def add_wall(self, edge):
+    def add_wall(self, edge: Edge) -> bool:
         """Draw a wall on an edge.  Returns True when something changed."""
         if edge in self.walls:
             return False
@@ -163,7 +165,7 @@ class FloorPlan:
         self.design_changed()
         return True
 
-    def remove_wall(self, edge):
+    def remove_wall(self, edge: Edge) -> bool:
         """Rub out a wall.  Returns True when something changed."""
         if edge not in self.walls:
             return False
@@ -171,7 +173,7 @@ class FloorPlan:
         self.design_changed()
         return True
 
-    def remove_stranded_walls(self):
+    def remove_stranded_walls(self) -> None:
         """Forget walls that no longer have a painted tile on either side.
 
         Without this, erasing a room would leave its interior walls behind,
@@ -190,7 +192,7 @@ class FloorPlan:
 
     # -- money -------------------------------------------------------------
 
-    def total_cost(self):
+    def total_cost(self) -> int:
         """Return the combined cost of every room in the design.
 
         TODO 10
@@ -204,7 +206,7 @@ class FloorPlan:
         """
         return 0
 
-    def clear(self):
+    def clear(self) -> None:
         """Remove every tile and every wall."""
         self.tiles = {}
         self.walls = set()

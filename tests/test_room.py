@@ -3,7 +3,7 @@
 from room import Room
 
 
-def make_bedroom():
+def make_bedroom() -> Room:
     """A 5 x 4 block of bedroom tiles with its corner at (2, 3)."""
     tiles = {(2 + column, 3 + row) for row in range(4) for column in range(5)}
     return Room("bedroom", tiles, 6000)

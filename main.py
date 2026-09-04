@@ -8,7 +8,7 @@ Run this file to play:
 from game import Game
 
 
-def main():
+def main() -> None:
     game = Game()
     game.run()
 

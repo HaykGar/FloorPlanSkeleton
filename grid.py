@@ -8,11 +8,12 @@ Levels are different sizes, so the tile size is worked out each time from
 how much room is available on screen.
 """
 
-from constants import GRID_AREA_RECT, GRID_PADDING
+from constants import GRID_AREA_RECT, GRID_PADDING, Edge, Point, Rectangle, Tile
+from floor_plan import FloorPlan
 from rules import wall_key
 
 
-def tile_size(floor_plan):
+def tile_size(floor_plan: FloorPlan) -> int:
     """Return the size in pixels of one grid tile for this floor plan.
 
     Bigger floor plans get smaller tiles so that every level fits the same
@@ -28,13 +29,13 @@ def tile_size(floor_plan):
     return max(1, min(size_from_width, size_from_height))
 
 
-def grid_pixel_size(floor_plan):
+def grid_pixel_size(floor_plan: FloorPlan) -> tuple[int, int]:
     """Return the total (width, height) of the drawn grid, in pixels."""
     size = tile_size(floor_plan)
     return (floor_plan.width * size, floor_plan.height * size)
 
 
-def grid_origin(floor_plan):
+def grid_origin(floor_plan: FloorPlan) -> Point:
     """Return the screen pixel position of the grid's top-left corner.
 
     The grid is centred inside its area, so plans of different shapes all
@@ -47,14 +48,14 @@ def grid_origin(floor_plan):
     return (origin_x, origin_y)
 
 
-def grid_to_screen(floor_plan, grid_x, grid_y):
+def grid_to_screen(floor_plan: FloorPlan, grid_x: int, grid_y: int) -> Point:
     """Return the screen pixel position of the top-left corner of a tile."""
     origin_x, origin_y = grid_origin(floor_plan)
     size = tile_size(floor_plan)
     return (origin_x + grid_x * size, origin_y + grid_y * size)
 
 
-def screen_to_grid(floor_plan, screen_x, screen_y):
+def screen_to_grid(floor_plan: FloorPlan, screen_x: int, screen_y: int) -> Tile:
     """Return the grid tile the given pixel sits on.
 
     TODO 1
@@ -83,7 +84,7 @@ def screen_to_grid(floor_plan, screen_x, screen_y):
     return (0, 0)
 
 
-def clamp_to_plan(floor_plan, grid_x, grid_y):
+def clamp_to_plan(floor_plan: FloorPlan, grid_x: int, grid_y: int) -> Tile:
     """Pull a tile position back inside the floor plan if it strayed outside.
 
     This is what stops a drag that runs off the edge of the grid from
@@ -94,7 +95,7 @@ def clamp_to_plan(floor_plan, grid_x, grid_y):
     return (clamped_x, clamped_y)
 
 
-def is_inside_grid(floor_plan, grid_x, grid_y):
+def is_inside_grid(floor_plan: FloorPlan, grid_x: int, grid_y: int) -> bool:
     """Return True when a tile position is inside the floor plan.
 
     TODO 2
@@ -111,7 +112,9 @@ def is_inside_grid(floor_plan, grid_x, grid_y):
     return True
 
 
-def edge_at_screen_position(floor_plan, screen_x, screen_y):
+def edge_at_screen_position(
+    floor_plan: FloorPlan, screen_x: int, screen_y: int
+) -> Edge | None:
     """Return the interior wall edge nearest to a pixel, or None.
 
     Walls sit between two tiles rather than on a tile, so the player is
@@ -148,7 +151,7 @@ def edge_at_screen_position(floor_plan, screen_x, screen_y):
     return wall_key((grid_x, grid_y), neighbour)
 
 
-def rectangle_from_drag(start_tile, end_tile):
+def rectangle_from_drag(start_tile: Tile, end_tile: Tile) -> Rectangle:
     """Turn the two ends of a mouse drag into (grid_x, grid_y, width, height).
 
     The player can drag in any direction, so the starting tile is not always
