@@ -162,5 +162,3 @@ Push all of it to the `main` branch of your repository:
 - A README of your own describing what you built, what you added beyond the
   TODOs, anything still broken, and one bug that took you a while.
 - A commit history that shows the work happening in steps.
-
-testing
