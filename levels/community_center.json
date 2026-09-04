@@ -1,0 +1,54 @@
+{
+    "level_id": "community_center",
+    "name": "Community Center",
+    "client_brief": "A town needs somewhere to gather. One big hall, a working kitchen, and enough bathrooms for a crowd.",
+    "plan_width": 24,
+    "plan_height": 16,
+    "budget": 1800000,
+    "minimum_areas": {
+        "living_room": 40,
+        "bathroom": 6
+    },
+    "room_colors": {
+        "living_room": [206, 148, 122]
+    },
+    "requirements": [
+        {
+            "kind": "minimum_area",
+            "room_type": "living_room",
+            "description": "The main hall is at least 40 tiles"
+        },
+        {
+            "kind": "room_count",
+            "room_type": "bathroom",
+            "count": 2,
+            "description": "Include at least 2 bathrooms"
+        },
+        {
+            "kind": "minimum_area",
+            "room_type": "bathroom",
+            "description": "Every bathroom is at least 6 tiles"
+        },
+        {
+            "kind": "required_room",
+            "room_type": "kitchen",
+            "description": "Include a kitchen"
+        },
+        {
+            "kind": "adjacent",
+            "room_type_a": "kitchen",
+            "room_type_b": "living_room",
+            "description": "The kitchen serves the main hall directly"
+        },
+        {
+            "kind": "not_adjacent",
+            "room_type_a": "bathroom",
+            "room_type_b": "kitchen",
+            "description": "No bathroom touches the kitchen"
+        },
+        {
+            "kind": "under_budget",
+            "description": "Stay within the budget"
+        }
+    ]
+}

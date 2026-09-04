@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Designs saved while playing (DEFAULT_SAVE_FILE in constants.py), and the
+# scratch file the storage tests write and clean up.  Level files in levels/
+# are part of the project and must NOT be ignored.
+my_design.json
+test_temporary_design.json
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# macOS / Windows
+.DS_Store
+Thumbs.db

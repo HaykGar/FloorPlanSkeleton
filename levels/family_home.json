@@ -1,0 +1,45 @@
+{
+    "level_id": "family_home",
+    "name": "Family Home",
+    "client_brief": "A family of four. Two children who each want their own room, and a client who does not want to smell the bathroom from the kitchen.",
+    "plan_width": 20,
+    "plan_height": 14,
+    "budget": 1100000,
+    "minimum_areas": {
+        "living_room": 20
+    },
+    "requirements": [
+        {
+            "kind": "room_count",
+            "room_type": "bedroom",
+            "count": 2,
+            "description": "Include at least 2 bedrooms"
+        },
+        {
+            "kind": "required_room",
+            "room_type": "kitchen",
+            "description": "Include a kitchen"
+        },
+        {
+            "kind": "minimum_area",
+            "room_type": "living_room",
+            "description": "The living room is at least 20 tiles"
+        },
+        {
+            "kind": "adjacent",
+            "room_type_a": "kitchen",
+            "room_type_b": "living_room",
+            "description": "The kitchen shares a wall with the living room"
+        },
+        {
+            "kind": "not_adjacent",
+            "room_type_a": "bathroom",
+            "room_type_b": "kitchen",
+            "description": "No bathroom touches the kitchen"
+        },
+        {
+            "kind": "under_budget",
+            "description": "Stay within the budget"
+        }
+    ]
+}

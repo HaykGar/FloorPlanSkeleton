@@ -1,0 +1,41 @@
+{
+    "level_id": "compact_apartment",
+    "name": "Compact Apartment",
+    "client_brief": "A first apartment for a young architect. Small, cheap, and it must still feel like a home.",
+    "plan_width": 14,
+    "plan_height": 10,
+    "budget": 450000,
+    "minimum_areas": {},
+    "requirements": [
+        {
+            "kind": "required_room",
+            "room_type": "bedroom",
+            "description": "Include a bedroom"
+        },
+        {
+            "kind": "required_room",
+            "room_type": "bathroom",
+            "description": "Include a bathroom"
+        },
+        {
+            "kind": "required_room",
+            "room_type": "kitchen",
+            "description": "Include a kitchen"
+        },
+        {
+            "kind": "minimum_area",
+            "room_type": "bedroom",
+            "description": "Every bedroom is at least 12 tiles"
+        },
+        {
+            "kind": "adjacent",
+            "room_type_a": "kitchen",
+            "room_type_b": "living_room",
+            "description": "The kitchen opens onto a living room"
+        },
+        {
+            "kind": "under_budget",
+            "description": "Stay within the budget"
+        }
+    ]
+}
