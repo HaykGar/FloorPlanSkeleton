@@ -70,6 +70,14 @@ class FloorPlan:
         
         Hint: to check whether a tile is in a room, you can use the "in" keyword.
         """
+
+        #loop thru each room in plan
+        for room in self.rooms():
+            #check if the room covers the mouse position
+            if room.contains_grid_position(grid_x, grid_y):
+                return room
+
+        # if no room covers this spot return none
         return None
 
     # -- painting ----------------------------------------------------------
@@ -108,6 +116,17 @@ class FloorPlan:
         For example, if tile is a Tile object and rectangle is a Rectangle object, you can 
         write "if tile in rectangle:" to check if the tile is inside the rectangle.
         """
+
+        # check if the rectangle falls outside the building plan
+        if not rectangle_is_inside_plan(rectangle, self):
+            return "That area is outside the building."
+
+        # Check each tile to make sure it doesn't overlap 
+        for tile in tiles_in_rectangle(rectangle):
+            existing_room_type = self.tiles.get(tile)
+            if existing_room_type is not None and existing_room_type != room_type:
+                 return "That area is already part of another room."
+
         return None
 
     def can_paint(self, rectangle: Rectangle, room_type: str) -> bool:
@@ -132,7 +151,16 @@ class FloorPlan:
         the classic bug here: everything looks right until the screen keeps
         showing the old rooms.
         """
-        return False
+
+        # see if the paintings allowed
+        if not self.can_paint(rectangle, room_type):
+            return False
+
+        for tile in tiles_in_rectangle(rectangle):
+            self.tiles[tile] = room_type
+
+        self.design_changed()
+        return True
 
     def erase(self, rectangle: Rectangle) -> int:
         """Clear every tile in an area.
@@ -153,7 +181,20 @@ class FloorPlan:
         Returns:
             The number of tiles cleared, as a whole number.
         """
-        return 0
+        tiles_cleared = 0
+
+        # loop thru tiles and delte them from self tiles if they exist
+        for tile in tiles_in_rectangle(rectangle):
+            if tile in self.tiles:
+                del self.tiles[tile]
+                tiles_cleared += 1
+
+        # fix up issues if anythin was cleared
+        if tiles_cleared > 0:
+            self.remove_stranded_walls()
+            self.design_changed()
+
+        return tiles_cleared
 
     def erase_room(self, room: Room) -> None:
         """Clear every tile of one room."""
@@ -218,7 +259,8 @@ class FloorPlan:
         Hint: function definition looks like: def calculate_total_cost(rooms: list[Room])
         Do we have a list of rooms we can get by calling self.some_function()?
         """
-        return 0
+
+        return calculate_total_cost(self.rooms())
 
     def clear(self) -> None:
         """Remove every tile and every wall."""

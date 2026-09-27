@@ -56,6 +56,16 @@ def grid_to_screen(floor_plan: FloorPlan, grid_x: int, grid_y: int) -> Point:
 
 
 def screen_to_grid(floor_plan: FloorPlan, screen_x: int, screen_y: int) -> Tile:
+
+# gets the grids og size
+
+    origin_x, origin_y = grid_origin(floor_plan)
+    size = tile_size(floor_plan)
+
+# (i had some help with this)
+    grid_x = (screen_x - origin_x) // size
+    grid_y = (screen_y - origin_y) // size
+
     """Return the grid tile the given pixel sits on.
 
     TODO 1
@@ -81,7 +91,7 @@ def screen_to_grid(floor_plan: FloorPlan, screen_x: int, screen_y: int) -> Tile:
     preview appears under your mouse and grows and shrinks as you drag,
     instead of being stuck in the corner.
     """
-    return (0, 0) # Replace this with your code
+    return (grid_x, grid_y) # Replace this with your code
 
 
 def clamp_to_plan(floor_plan: FloorPlan, grid_x: int, grid_y: int) -> Tile:

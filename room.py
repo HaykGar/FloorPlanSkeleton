@@ -38,7 +38,10 @@ class Room:
         Hint: it's the same function you would use to get the LENgth of a list or string.  Do you remember what it is?
         Also, make sure you are using self.tiles instead of just tiles, which is a local variable that doesn't exist in this method.
         """
-        return 0
+
+        # return amount of grid tiles the room covers
+
+        return len(self.tiles)
 
     def cost(self) -> int:
         """Return the total cost of building this room.
@@ -52,7 +55,9 @@ class Room:
         
         Hint: to call functions that are part of the same class, you need to use self.  For example, self.area() will call the area() method of this Room object.
         """
-        return 0
+
+        # this should give the total cost of building the room
+        return self.area() * self.cost_per_tile
 
     def contains_grid_position(self, grid_x: int, grid_y: int) -> bool:
         """Return True when the tile (grid_x, grid_y) is part of this room.
@@ -68,7 +73,7 @@ class Room:
         Hint: to build a tuple, you can use parentheses like this: (var1, var2).
         The "in" keyword is also useful here.
         """
-        return False
+        return (grid_x, grid_y) in self.tiles
 
     def bounding_box(self) -> tuple[int, int, int, int]:
         """Return (min_x, min_y, max_x, max_y) of the tiles in this room.
