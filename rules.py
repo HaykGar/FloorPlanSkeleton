@@ -233,8 +233,8 @@ def rooms_are_adjacent(room1: Room, room2: Room) -> bool:
 
     # go thru each tile belonging to the first room
     for t in room1.tiles:
-        for n in neighbours(t): # get the 4 adj nbs for said tile
-            if n in room2.tiles: # check if this nb tile is part of the 2nd room
+        for n in neighbours(t): # get the 4 adjacent nbs for said tile
+            if n in room2.tiles: # check if this neighbor tile is part of the 2nd room
                 return True
             
     return False
@@ -344,14 +344,14 @@ def check_one_requirement(requirement: dict, floor_plan: FloorPlan, level: dict)
         target_type = requirement["room_type"]
         required_count = requirement["count"]
         matching_rooms = rooms_of_type(rooms, target_type)
-        return len(matching_rooms) > required_count
+        return len(matching_rooms) >= required_count
 
     if kind == "minimum_area":
         # Check if every room of room_type is at least the required minimum area
         target_type = requirement["room_type"]
         matching_rooms = rooms_of_type(rooms, target_type)
         if not matching_rooms:
-            return False # If there are no rooms of this type, its not finihsde
+            return False # If there are no rooms of this type, its not finished
         for room in matching_rooms:
             if room.area() < minimum_area_for(target_type, level):
                 return False
