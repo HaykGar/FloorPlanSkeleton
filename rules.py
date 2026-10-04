@@ -47,7 +47,14 @@ def neighbours(tile: Tile) -> list[Tile]:
     While this returns an empty list, no tile can reach any other, so every
     painted tile shows up as its own tiny room.
     """
-    return []
+    x, y = tile
+
+    return [
+        Tile((x - 1, y)), # left
+        Tile((x + 1, y)), # right
+        Tile((x, y - 1)), # above
+        Tile((x, y + 1)) # below
+    ]
 
 
 def wall_key(tile_a: Tile, tile_b: Tile) -> Edge:
@@ -85,7 +92,16 @@ def tiles_are_joined(
     Returns:
         True or False.
     """
-    return False
+    if tile_a not in tiles or tile_b not in tiles:
+        return False
+
+    if tiles[tile_a] != tiles[tile_b]:
+        return False
+
+    if wall_key(tile_a, tile_b) in walls:
+        return False
+
+    return True
 
 
 def tiles_in_rectangle(rectangle: Rectangle) -> set[Tile]:
@@ -113,6 +129,23 @@ def rectangle_is_inside_plan(rectangle: Rectangle, floor_plan: FloorPlan) -> boo
     Returns:
         True or False.
     """
+    grid_x, grid_y, width, height = rectangle
+
+    if width < 0 or height < 0:
+        raise ValueError("rectangle includes negative sidelengths")
+
+    if grid_x + width - 1 > floor_plan.width - 1:
+        return False
+
+    if grid_x < 0:
+        return False
+
+    if grid_y + height - 1 > floor_plan.height - 1:
+        return False
+
+    if grid_y < 0:
+        return False
+    
     return True
 
 
@@ -197,6 +230,13 @@ def rooms_are_adjacent(room1: Room, room2: Room) -> bool:
     Returns:
         True or False.
     """
+
+    # go thru each tile belonging to the first room
+    for t in room1.tiles:
+        for n in neighbours(t): # get the 4 adj nbs for said tile
+            if n in room2.tiles: # check if this nb tile is part of the 2nd room
+                return True
+            
     return False
 
 
@@ -216,7 +256,10 @@ def calculate_total_cost(rooms: list[Room]) -> int:
     a running total is just as correct.  The budget bar and the under-budget
     requirement both read this, so they stay at zero until it works.
     """
-    return 0
+
+    costs = [r.cost() for r in rooms]
+    
+    return sum(costs)
 
 
 def calculate_used_tiles(rooms: list[Room]) -> int:
@@ -295,7 +338,49 @@ def check_one_requirement(requirement: dict, floor_plan: FloorPlan, level: dict)
 
     # An unknown requirement kind can never be satisfied, but it must not
     # crash the game either.  The level file is simply wrong.
-    return False
+
+    if kind == "room_count":
+    # Check if there are at least 'count' rooms of the given 'room_type'
+        target_type = requirement["room_type"]
+        required_count = requirement["count"]
+        matching_rooms = rooms_of_type(rooms, target_type)
+        return len(matching_rooms) > required_count
+
+    if kind == "minimum_area":
+        # Check if every room of room_type is at least the required minimum area
+        target_type = requirement["room_type"]
+        matching_rooms = rooms_of_type(rooms, target_type)
+        if not matching_rooms:
+            return False # If there are no rooms of this type, its not finihsde
+        for room in matching_rooms:
+            if room.area() < minimum_area_for(target_type, level):
+                return False
+        return True
+
+    if kind == "adjacent":
+    # Check if at least one room of type_a touches a room frm type_b
+        type_a = requirement["room_type_a"]
+        type_b = requirement["room_type_b"]
+        rooms_a = rooms_of_type(rooms, type_a)
+        rooms_b = rooms_of_type(rooms, type_b)
+        for ra in rooms_a:
+            for rb in rooms_b:
+                if rooms_are_adjacent(ra, rb):
+                    return True
+        return False
+
+    if kind == "not_adjacent":
+    # Check that no room of type_a touches a room of type_b
+        type_a = requirement["room_type_a"]
+        type_b = requirement["room_type_b"]
+        rooms_a = rooms_of_type(rooms, type_a)
+        rooms_b = rooms_of_type(rooms, type_b)
+        for ra in rooms_a:
+            for rb in rooms_b:
+                if rooms_are_adjacent(ra, rb):
+                    return False
+                    
+        return True
 
 
 def check_requirements(floor_plan: FloorPlan, level: dict) -> list[dict]:
