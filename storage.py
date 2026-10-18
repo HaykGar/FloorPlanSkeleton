@@ -119,6 +119,8 @@ def load_level(file_name: str) -> dict:
 
     path = level_path(file_name)
 
+    print('level path is', level_path)
+
     level = read_json_file(path, "level")
 
     if not isinstance(level, dict):
@@ -203,6 +205,7 @@ def save_design(file_name: str, floor_plan: FloorPlan, level_id: str) -> str:
     Returns:
         The path written to, so the game can tell the player where it went.
     """
+    path = design_path(file_name)
 
     tiles_list = []
     for (x, y), room_types in sorted(floor_plan.tiles.items()):
@@ -229,15 +232,15 @@ def save_design(file_name: str, floor_plan: FloorPlan, level_id: str) -> str:
         "walls" : walls_list
     }
 
+    print(path, "load file path")
+
     try: 
-        with open(file_name, "w") as file:
+        with open(path, "w") as file:
             json.dump(data, file, indent=4)
     except OSError:
-        raise ValueError(f"Couldnt save dsign to {file_name}")
+        raise ValueError(f"Couldnt save dsign to {path}")
 
-
-
-    return design_path(file_name)
+    return path
 
 
 def whole_number(data: dict, key: str, what_it_is: str) -> int:
@@ -329,4 +332,26 @@ def load_design(file_name: str) -> dict:
     Returning empty collections, as it does now, means Load appears to work
     but always gives you a blank plan.
     """
-    return {"level": "", "tiles": {}, "walls": set()}
+
+    path = design_path(file_name)
+    data = read_json_file(path, "saved design")
+
+    if not isinstance(data, dict):
+        raise ValueError('Saved design is not a dictionary')
+
+    for key in ["level", "tiles", "walls"]:
+        if key not in data:
+            raise ValueError(f"Saved design is missing {key}")
+
+    if not isinstance(data['tiles'], list):
+        raise ValueError('Tiles must be a list')
+
+    if not isinstance(data['walls'], list):
+        raise ValueError('Walls must be a list')
+
+    tiles = tiles_from_data(data["tiles"])
+    walls = walls_from_data(data["walls"])
+
+    return {"level": data['level'], "tiles": tiles, "walls": walls}
+
+
