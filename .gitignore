@@ -19,3 +19,6 @@ test_temporary_design.json
 # macOS / Windows
 .DS_Store
 Thumbs.db
+
+
+skeleton_doodles.py
